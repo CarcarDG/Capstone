@@ -1,0 +1,185 @@
+================================================================================
+                    RECIPE PLATFORM - START HERE
+================================================================================
+
+Welcome! Follow these steps to get your application running:
+
+STEP 1: INSTALL PREREQUISITES (First Time Only)
+--------------------------------------------------------------------------------
+You need to install these programs first:
+
+1. JDK 21          → https://www.oracle.com/java/technologies/downloads/#java21
+2. Maven           → https://maven.apache.org/download.cgi
+3. Node.js 22      → https://nodejs.org/
+4. MySQL           → https://dev.mysql.com/downloads/installer/
+
+📖 Detailed instructions: Open INSTALL_PREREQUISITES.md
+
+After installing, CLOSE and REOPEN PowerShell, then verify:
+   java -version
+   mvn -version
+   node -v
+   mysql --version
+
+
+STEP 2: SETUP DATABASE (First Time Only)
+--------------------------------------------------------------------------------
+Run this command in PowerShell:
+
+   .\setup-database.bat
+
+Enter your MySQL root password when prompted.
+
+
+STEP 3: CONFIGURE BACKEND (First Time Only)
+--------------------------------------------------------------------------------
+Edit this file: backend\src\main\resources\application.yml
+
+Change this line:
+   password: root
+
+To your MySQL root password:
+   password: YOUR_MYSQL_ROOT_PASSWORD
+
+
+STEP 4: START THE APPLICATION
+--------------------------------------------------------------------------------
+Run this command in PowerShell:
+
+   .\start-dev.bat
+
+This will:
+✓ Start backend server (http://localhost:8080/api)
+✓ Start frontend server (http://localhost:5173)
+✓ Open your browser automatically
+
+
+STEP 5: LOGIN AND TEST
+--------------------------------------------------------------------------------
+The browser will open to: http://localhost:5173
+
+Login with these credentials:
+
+ADMIN ACCOUNT:
+   Username: admin
+   Password: admin123
+   → Access admin dashboard with user management, statistics, etc.
+
+USER ACCOUNT:
+   Username: ccc
+   Password: user123
+   → Access user homepage with recipes, notes, etc.
+
+
+TROUBLESHOOTING
+--------------------------------------------------------------------------------
+If something doesn't work:
+
+1. Check all prerequisites are installed (Step 1)
+2. Make sure MySQL is running
+3. Verify database password in application.yml
+4. Read QUICKSTART.md for detailed troubleshooting
+
+Common Issues:
+- "mvn not found" → Maven not installed or not in PATH
+- "npm not found" → Node.js not installed
+- "Cannot connect to database" → Wrong password in application.yml
+- "Port already in use" → Close other applications using ports 8080 or 5173
+
+
+DOCUMENTATION
+--------------------------------------------------------------------------------
+📖 QUICKSTART.md              → Quick start guide (READ THIS FIRST!)
+📖 WINDOWS_SETUP.md            → Windows-specific setup guide
+📖 INSTALL_PREREQUISITES.md   → How to install JDK, Maven, Node.js, MySQL
+📖 SETUP.md                    → Complete setup documentation
+📖 README.md                   → Project overview
+
+📖 backend/README.md           → Backend API documentation
+📖 frontend/README.md          → Frontend documentation
+
+
+PROJECT STRUCTURE
+--------------------------------------------------------------------------------
+Capstone/
+├── backend/              → Spring Boot API (Java 21)
+├── frontend/             → Vue.js Application (Node.js 22)
+├── database/             → SQL scripts
+├── setup-database.bat    → Setup database
+├── start-dev.bat         → Start both servers
+└── START_HERE.txt        → This file
+
+
+NEED HELP?
+--------------------------------------------------------------------------------
+1. Read QUICKSTART.md for step-by-step instructions
+2. Check error messages in terminal
+3. Verify all prerequisites are installed
+4. Make sure MySQL is running
+5. Check browser console (F12) for frontend errors
+
+
+ESTIMATED TIME
+--------------------------------------------------------------------------------
+First-time setup:  30-40 minutes (including installations)
+Subsequent starts: 30-60 seconds
+
+
+WHAT'S INCLUDED
+--------------------------------------------------------------------------------
+✓ Complete database schema with sample data
+✓ Spring Boot backend with JWT authentication
+✓ Vue.js frontend with admin and user interfaces
+✓ Login system with role-based access
+✓ Admin dashboard with statistics
+✓ User management (CRUD)
+✓ Recipe and note management
+✓ Announcement system
+✓ Responsive UI with Element Plus
+
+
+NEXT STEPS AFTER SETUP
+--------------------------------------------------------------------------------
+1. ✓ Test login with admin and user accounts
+2. ✓ Explore admin dashboard features
+3. ✓ Browse user homepage
+4. ✓ Review code structure
+5. ✓ Start implementing additional features
+
+
+QUICK COMMANDS
+--------------------------------------------------------------------------------
+Start application:
+   .\start-dev.bat
+
+Setup database:
+   .\setup-database.bat
+
+Backend only:
+   cd backend
+   mvn spring-boot:run
+
+Frontend only:
+   cd frontend
+   npm run dev
+
+
+SUPPORT
+--------------------------------------------------------------------------------
+For detailed help, open these files:
+- QUICKSTART.md (recommended starting point)
+- WINDOWS_SETUP.md (Windows-specific issues)
+- INSTALL_PREREQUISITES.md (installation help)
+
+
+================================================================================
+                         READY TO START!
+================================================================================
+
+Run this command to begin:
+
+   .\start-dev.bat
+
+Good luck with your project! 🚀
+
+================================================================================
