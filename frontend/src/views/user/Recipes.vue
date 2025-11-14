@@ -2,13 +2,18 @@
   <div class="recipes-page">
     <div class="page-header">
       <h1>Recipes</h1>
-      <el-input
-        v-model="searchQuery"
-        placeholder="Search recipes..."
-        prefix-icon="Search"
-        style="width: 300px"
-        clearable
-      />
+      <div class="header-actions">
+        <el-input
+          v-model="searchQuery"
+          placeholder="Search recipes..."
+          prefix-icon="Search"
+          style="width: 300px"
+          clearable
+        />
+        <el-button type="primary" @click="createRecipe">
+          <el-icon><Plus /></el-icon> Create Recipe
+        </el-button>
+      </div>
     </div>
 
     <div class="filters">
@@ -56,11 +61,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Clock, User, View, Star, Collection } from '@element-plus/icons-vue'
+import { Clock, User, View, Star, Collection, Plus } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const searchQuery = ref('')
 const selectedCategory = ref('all')
+
+const createRecipe = () => {
+  router.push('/recipes/create')
+}
 
 const recipes = ref([
   {
@@ -158,6 +167,12 @@ const viewRecipe = (id) => {
 .page-header h1 {
   margin: 0;
   font-size: 28px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .filters {

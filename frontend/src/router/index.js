@@ -63,6 +63,16 @@ const router = createRouter({
           path: 'profile',
           name: 'Profile',
           component: () => import('@/views/user/Profile.vue')
+        },
+        {
+          path: 'recipes/create',
+          name: 'CreateRecipe',
+          component: () => import('@/views/user/CreateRecipe.vue')
+        },
+        {
+          path: 'recipes/edit/:id',
+          name: 'EditRecipe',
+          component: () => import('@/views/user/CreateRecipe.vue')
         }
       ]
     },

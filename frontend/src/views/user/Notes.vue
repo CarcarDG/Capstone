@@ -107,7 +107,8 @@ const filteredNotes = computed(() => {
 })
 
 const createNote = () => {
-  router.push('/notes/create')
+  ElMessage.info('Create note feature coming soon!')
+  // router.push('/notes/create')
 }
 
 const viewNote = (id) => {
