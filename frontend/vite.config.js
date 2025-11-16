@@ -9,6 +9,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  // GitHub Pages deployment - change 'Capstone' to your repo name
+  base: process.env.NODE_ENV === 'production' ? '/Capstone/' : '/',
   server: {
     port: 5173,
     proxy: {
