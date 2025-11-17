@@ -1,8 +1,9 @@
 [phases.setup]
-nixPkgs = ["openjdk21", "maven"]
+nixPkgs = ["jdk21", "maven"]
+aptPkgs = []
 
 [phases.build]
 cmds = ["mvn clean package -DskipTests"]
 
 [start]
-cmd = "java -Dspring.profiles.active=prod -jar target/recipe-platform-1.0.0.jar"
+cmd = "java -Dspring.profiles.active=prod -Dserver.port=$PORT -jar target/recipe-platform-1.0.0.jar"
