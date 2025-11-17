@@ -9,8 +9,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  // Use root path for Vercel, /Capstone/ for GitHub Pages
-  base: process.env.VERCEL ? '/' : (process.env.NODE_ENV === 'production' ? '/Capstone/' : '/'),
+  // Use root path for Netlify/Vercel, /Capstone/ for GitHub Pages only
+  base: process.env.NETLIFY || process.env.VERCEL ? '/' : (process.env.NODE_ENV === 'production' ? '/Capstone/' : '/'),
   server: {
     port: 5173,
     proxy: {
