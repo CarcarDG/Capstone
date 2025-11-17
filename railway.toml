@@ -1,8 +1,8 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd backend && mvn clean package -DskipTests"
+nixpacksConfigPath = "backend/nixpacks.toml"
 
 [deploy]
-startCommand = "cd backend && java -Dspring.profiles.active=prod -jar target/recipe-platform-1.0.0.jar"
+startCommand = "java -Dspring.profiles.active=prod -Dserver.port=$PORT -jar target/recipe-platform-1.0.0.jar"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

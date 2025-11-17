@@ -1,0 +1,9 @@
+Dockerfile
+docker-compose.yml
+.dockerignore
+frontend/
+database/
+*.md
+.git/
+.github/
+node_modules/
