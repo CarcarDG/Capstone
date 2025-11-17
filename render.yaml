@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: recipe-backend
+    env: java
+    region: singapore
+    plan: free
+    buildCommand: cd backend && mvn clean package -DskipTests
+    startCommand: cd backend && java -Dspring.profiles.active=prod -Dserver.port=$PORT -jar target/recipe-platform-1.0.0.jar
+    envVars:
+      - key: JAVA_VERSION
+        value: 21
+      - key: MAVEN_VERSION
+        value: 3.9.5
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: 86400000
