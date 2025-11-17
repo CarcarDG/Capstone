@@ -9,8 +9,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  // GitHub Pages deployment - change 'Capstone' to your repo name
-  base: process.env.NODE_ENV === 'production' ? '/Capstone/' : '/',
+  // Use root path for Vercel, /Capstone/ for GitHub Pages
+  base: process.env.VERCEL ? '/' : (process.env.NODE_ENV === 'production' ? '/Capstone/' : '/'),
   server: {
     port: 5173,
     proxy: {
@@ -19,5 +19,10 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false
   }
 })
