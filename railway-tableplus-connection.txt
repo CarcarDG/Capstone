@@ -1,0 +1,30 @@
+# Railway MySQL Connection Info for TablePlus
+
+## Connection Details
+Name: Railway Recipe DB
+Type: MySQL
+Host: yawnote.proxy.rlwy.net
+Port: 59627
+User: root
+Password: (click 'show' in Railway to see password)
+Database: railway
+
+## Steps to Connect in TablePlus:
+1. Open TablePlus
+2. Click "Create a new connection"
+3. Select "MySQL"
+4. Fill in the details above
+5. For password: Go back to Railway, click "show" next to the mysql command
+6. Copy the password (after -p)
+7. Click "Test" then "Connect"
+
+## Quick Check Queries:
+Once connected, run these queries:
+
+-- Check if tables have data
+SELECT COUNT(*) as category_count FROM recipe_category;
+SELECT COUNT(*) as recipe_count FROM recipe;
+SELECT COUNT(*) as user_count FROM user;
+
+-- If all return 0, you need to import data
+-- If they return numbers > 0, data already exists!

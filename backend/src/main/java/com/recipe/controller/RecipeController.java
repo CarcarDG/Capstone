@@ -1,73 +1,79 @@
 package com.recipe.controller;
 
+import com.recipe.entity.Recipe;
+import com.recipe.service.RecipeService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Recipe Controller - Manages recipes
  * Created: 2025-12-01
+ * Updated: 2025-12-01 - Connected to database
  */
 @RestController
 @RequestMapping("/api/recipes")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class RecipeController {
     
+    private final RecipeService recipeService;
+    
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllRecipes() {
-        List<Map<String, Object>> recipes = new ArrayList<>();
-        
-        // Mock data - Replace with database queries later
-        String[] recipeNames = {
-            "Kung Pao Chicken", "Mapo Tofu", "Braised Pork Belly", "Sweet and Sour Ribs",
-            "Tomato Scrambled Eggs", "Fish Flavored Shredded Pork", "Boiled Fish", "Twice Cooked Pork"
-        };
-        
-        for (int i = 0; i < recipeNames.length; i++) {
-            Map<String, Object> recipe = new HashMap<>();
-            recipe.put("id", i + 1);
-            recipe.put("title", recipeNames[i]);
-            recipe.put("description", "Detailed recipe for " + recipeNames[i]);
-            recipe.put("difficulty", i % 3 == 0 ? "Easy" : i % 3 == 1 ? "Medium" : "Hard");
-            recipe.put("cookingTime", (i + 1) * 10);
-            recipe.put("servings", i % 4 + 2);
-            recipe.put("categoryId", i % 8 + 1);
-            recipes.add(recipe);
-        }
-        
+    public ResponseEntity<List<Recipe>> getAllRecipes() {
+        List<Recipe> recipes = recipeService.getAllRecipes();
         return ResponseEntity.ok(recipes);
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getRecipeById(@PathVariable Long id) {
-        Map<String, Object> recipe = new HashMap<>();
-        recipe.put("id", id);
-        recipe.put("title", "Recipe " + id);
-        recipe.put("description", "This is a delicious dish");
-        recipe.put("difficulty", "Medium");
-        recipe.put("cookingTime", 30);
-        recipe.put("servings", 4);
-        recipe.put("ingredients", "List of ingredients");
-        recipe.put("steps", "Cooking steps");
-        return ResponseEntity.ok(recipe);
+    public ResponseEntity<Recipe> getRecipeById(@PathVariable Long id) {
+        recipeService.incrementViewCount(id);
+        return recipeService.getRecipeById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<Map<String, Object>>> getRecipesByCategory(@PathVariable Long categoryId) {
-        List<Map<String, Object>> recipes = new ArrayList<>();
-        
-        for (int i = 0; i < 3; i++) {
-            Map<String, Object> recipe = new HashMap<>();
-            recipe.put("id", categoryId * 10 + i);
-            recipe.put("title", "Recipe " + (i + 1) + " from Category " + categoryId);
-            recipe.put("categoryId", categoryId);
-            recipes.add(recipe);
-        }
-        
+    public ResponseEntity<List<Recipe>> getRecipesByCategory(@PathVariable Long categoryId) {
+        List<Recipe> recipes = recipeService.getRecipesByCategory(categoryId);
         return ResponseEntity.ok(recipes);
+    }
+    
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Recipe>> getRecipesByUser(@PathVariable Long userId) {
+        List<Recipe> recipes = recipeService.getRecipesByUser(userId);
+        return ResponseEntity.ok(recipes);
+    }
+    
+    @GetMapping("/featured")
+    public ResponseEntity<List<Recipe>> getFeaturedRecipes() {
+        List<Recipe> recipes = recipeService.getFeaturedRecipes();
+        return ResponseEntity.ok(recipes);
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<List<Recipe>> searchRecipes(@RequestParam String keyword) {
+        List<Recipe> recipes = recipeService.searchRecipes(keyword);
+        return ResponseEntity.ok(recipes);
+    }
+    
+    @PostMapping
+    public ResponseEntity<Recipe> createRecipe(@RequestBody Recipe recipe) {
+        Recipe created = recipeService.createRecipe(recipe);
+        return ResponseEntity.ok(created);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<Recipe> updateRecipe(@PathVariable Long id, @RequestBody Recipe recipe) {
+        Recipe updated = recipeService.updateRecipe(id, recipe);
+        return ResponseEntity.ok(updated);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
+        recipeService.deleteRecipe(id);
+        return ResponseEntity.ok().build();
     }
 }
