@@ -1,5 +1,6 @@
 package com.recipe.config;
 
+// Updated: 2025-12-01 - Fixed CORS and public endpoints for production deployment
 import com.recipe.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

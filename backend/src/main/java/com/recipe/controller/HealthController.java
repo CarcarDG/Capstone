@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Health check controller for monitoring service status
+ * Created: 2025-12-01
+ */
 @RestController
 public class HealthController {
     
