@@ -6,14 +6,21 @@ services:
     plan: free
     buildCommand: cd backend && mvn clean package -DskipTests
     startCommand: cd backend && java -Dspring.profiles.active=prod -Dserver.port=$PORT -jar target/recipe-platform-1.0.0.jar
+    healthCheckPath: /health
     envVars:
       - key: JAVA_VERSION
         value: 21
       - key: MAVEN_VERSION
         value: 3.9.5
       - key: DATABASE_URL
-        sync: false
+        value: jdbc:mysql://junction.proxy.rlwy.net:53880/railway?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - key: MYSQL_USER
+        value: root
+      - key: MYSQL_PASSWORD
+        value: ydJxqPqvvJqPCqJJqvJJJJJJJJJJJJJJ
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRATION
         value: 86400000
+      - key: FRONTEND_URL
+        value: https://deliousrecipesfinder.netlify.app

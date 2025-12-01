@@ -36,13 +36,14 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/health", "/actuator/**").permitAll()
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/recipes/**").permitAll()
-                .requestMatchers("/api/categories/**").permitAll()
+                // Public endpoints - no authentication required
+                .requestMatchers("/", "/health", "/actuator/**", "/error").permitAll()
+                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                .requestMatchers("/api/recipes/**", "/api/categories/**").permitAll()
                 .requestMatchers("/public/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                // Admin endpoints - require ADMIN role
+                .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
