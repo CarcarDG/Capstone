@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/health", "/actuator/**", "/error").permitAll()
                 .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/api/recipes/**", "/api/categories/**").permitAll()
+                .requestMatchers("/api/announcements/**", "/api/notes/**").permitAll()
                 .requestMatchers("/public/**").permitAll()
                 // Admin endpoints - require ADMIN role
                 .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
