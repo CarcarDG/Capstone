@@ -43,8 +43,8 @@ public class Recipe {
     private Integer cookingTime;
     
     @Enumerated(EnumType.STRING)
-    @Column(length = 10)
-    private Difficulty difficulty = Difficulty.MEDIUM;
+    @Column(length = 10, nullable = true)
+    private Difficulty difficulty;
     
     private Integer servings = 1;
     
@@ -79,6 +79,21 @@ public class Recipe {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (difficulty == null) {
+            difficulty = Difficulty.MEDIUM;
+        }
+        if (viewCount == null) {
+            viewCount = 0;
+        }
+        if (likeCount == null) {
+            likeCount = 0;
+        }
+        if (collectCount == null) {
+            collectCount = 0;
+        }
+        if (commentCount == null) {
+            commentCount = 0;
+        }
     }
     
     @PreUpdate

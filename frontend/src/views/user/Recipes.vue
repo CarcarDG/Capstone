@@ -18,14 +18,14 @@
 
     <div class="filters">
       <el-radio-group v-model="selectedCategory" @change="handleCategoryChange">
-        <el-radio-button label="all">All</el-radio-button>
-        <el-radio-button label="main">Main Dishes</el-radio-button>
-        <el-radio-button label="quick">Quick Meals</el-radio-button>
-        <el-radio-button label="soups">Soups</el-radio-button>
-        <el-radio-button label="baking">Baking</el-radio-button>
-        <el-radio-button label="desserts">Desserts</el-radio-button>
-        <el-radio-button label="vegetarian">Vegetarian</el-radio-button>
-        <el-radio-button label="meat">Meat Dishes</el-radio-button>
+        <el-radio-button value="all">All</el-radio-button>
+        <el-radio-button value="main">Main Dishes</el-radio-button>
+        <el-radio-button value="quick">Quick Meals</el-radio-button>
+        <el-radio-button value="soups">Soups</el-radio-button>
+        <el-radio-button value="baking">Baking</el-radio-button>
+        <el-radio-button value="desserts">Desserts</el-radio-button>
+        <el-radio-button value="vegetarian">Vegetarian</el-radio-button>
+        <el-radio-button value="meat">Meat Dishes</el-radio-button>
       </el-radio-group>
     </div>
 

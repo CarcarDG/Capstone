@@ -23,8 +23,13 @@ public class RecipeController {
     
     @GetMapping
     public ResponseEntity<List<Recipe>> getAllRecipes() {
-        List<Recipe> recipes = recipeService.getAllRecipes();
-        return ResponseEntity.ok(recipes);
+        try {
+            List<Recipe> recipes = recipeService.getAllRecipes();
+            return ResponseEntity.ok(recipes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
     
     @GetMapping("/{id}")
