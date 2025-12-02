@@ -29,7 +29,7 @@
       </el-radio-group>
     </div>
 
-    <div class="recipes-grid">
+    <div class="recipes-grid" v-loading="loading">
       <el-card 
         v-for="recipe in filteredRecipes" 
         :key="recipe.id" 
@@ -59,72 +59,53 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Clock, User, View, Star, Collection, Plus } from '@element-plus/icons-vue'
+import { recipeAPI } from '@/api/recipe'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const searchQuery = ref('')
 const selectedCategory = ref('all')
+const loading = ref(false)
+const recipes = ref([])
 
 const createRecipe = () => {
   router.push('/recipes/create')
 }
 
-const recipes = ref([
-  {
-    id: 1,
-    title: 'Healthy Shrimp Mushroom Tofu Soup',
-    description: 'Low-calorie, high-protein nutritious healthy soup',
-    coverImage: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&h=600&fit=crop',
-    category: 'soups',
-    difficulty: 'EASY',
-    cookingTime: 30,
-    servings: 2,
-    viewCount: 1234,
-    likeCount: 89,
-    collectCount: 56
-  },
-  {
-    id: 2,
-    title: 'Low-Calorie Sweet Pumpkin Pancakes',
-    description: 'Healthy and delicious pumpkin treats',
-    coverImage: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop',
-    category: 'desserts',
-    difficulty: 'EASY',
-    cookingTime: 45,
-    servings: 4,
-    viewCount: 2341,
-    likeCount: 156,
-    collectCount: 89
-  },
-  {
-    id: 3,
-    title: 'Potato Shred Egg Pancake',
-    description: 'Simple and quick breakfast option',
-    coverImage: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&h=600&fit=crop',
-    category: 'quick',
-    difficulty: 'EASY',
-    cookingTime: 20,
-    servings: 2,
-    viewCount: 3456,
-    likeCount: 234,
-    collectCount: 123
-  },
-  {
-    id: 4,
-    title: 'Comfort Food That Heals the Soul',
-    description: 'Exquisite and delicious creative cuisine',
-    coverImage: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop',
-    category: 'main',
-    difficulty: 'MEDIUM',
-    cookingTime: 60,
-    servings: 3,
-    viewCount: 4567,
-    likeCount: 345,
-    collectCount: 234
+const fetchRecipes = async () => {
+  loading.value = true
+  try {
+    const data = await recipeAPI.getAllRecipes()
+    recipes.value = data.map(recipe => ({
+      ...recipe,
+      category: getCategoryName(recipe.categoryId),
+      viewCount: recipe.viewCount || 0,
+      likeCount: recipe.likeCount || 0,
+      collectCount: recipe.collectCount || 0
+    }))
+  } catch (error) {
+    console.error('Failed to fetch recipes:', error)
+    ElMessage.error('Failed to load recipes')
+  } finally {
+    loading.value = false
   }
-])
+}
+
+const getCategoryName = (categoryId) => {
+  const categoryMap = {
+    1: 'main',
+    2: 'quick',
+    3: 'soups',
+    4: 'baking',
+    5: 'desserts',
+    6: 'vegetarian',
+    7: 'meat'
+  }
+  return categoryMap[categoryId] || 'main'
+}
 
 const filteredRecipes = computed(() => {
   let result = recipes.value
@@ -151,6 +132,10 @@ const handleCategoryChange = () => {
 const viewRecipe = (id) => {
   router.push(`/recipes/${id}`)
 }
+
+onMounted(() => {
+  fetchRecipes()
+})
 </script>
 
 <style scoped>

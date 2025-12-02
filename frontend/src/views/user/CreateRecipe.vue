@@ -189,6 +189,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Plus, Delete, ArrowLeft } from '@element-plus/icons-vue'
+import { recipeAPI } from '@/api/recipe'
 
 const route = useRoute()
 const router = useRouter()
@@ -234,6 +235,19 @@ const rules = {
   difficulty: [
     { required: true, message: 'Please select difficulty', trigger: 'change' }
   ]
+}
+
+const getCategoryId = (categoryName) => {
+  const categoryMap = {
+    'main': 1,
+    'quick': 2,
+    'soups': 3,
+    'baking': 4,
+    'desserts': 5,
+    'vegetarian': 6,
+    'meat': 7
+  }
+  return categoryMap[categoryName] || 1
 }
 
 const handleCoverChange = (file) => {
@@ -299,14 +313,35 @@ const submitRecipe = async () => {
       submitting.value = true
       
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        // Prepare recipe data for API
+        const recipeData = {
+          title: recipeForm.title,
+          description: recipeForm.description,
+          categoryId: getCategoryId(recipeForm.category),
+          userId: 2, // TODO: Get from auth store
+          ingredients: JSON.stringify(validIngredients),
+          steps: JSON.stringify(validSteps.map((s, i) => ({ step: i + 1, description: s.description }))),
+          cookingTime: recipeForm.cookingTime,
+          difficulty: recipeForm.difficulty,
+          servings: recipeForm.servings,
+          tips: recipeForm.tips || '',
+          coverImage: recipeForm.coverImage || '',
+          status: 1 // Published
+        }
+        
+        // Call API
+        if (isEdit.value) {
+          await recipeAPI.updateRecipe(route.params.id, recipeData)
+        } else {
+          await recipeAPI.createRecipe(recipeData)
+        }
         
         ElMessage.success(isEdit.value ? 'Recipe updated successfully!' : 'Recipe published successfully!')
         localStorage.removeItem('recipeDraft')
         router.push('/recipes')
       } catch (error) {
-        ElMessage.error('Failed to save recipe')
+        console.error('Failed to save recipe:', error)
+        ElMessage.error('Failed to save recipe. Please try again.')
       } finally {
         submitting.value = false
       }
