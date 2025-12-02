@@ -79,16 +79,31 @@ const fetchRecipes = async () => {
   loading.value = true
   try {
     const data = await recipeAPI.getAllRecipes()
-    recipes.value = data.map(recipe => ({
+    console.log('API Response:', data)
+    console.log('Response type:', typeof data)
+    console.log('Is array:', Array.isArray(data))
+    
+    // Handle both array and object responses
+    const recipeList = Array.isArray(data) ? data : (data.data || [])
+    
+    recipes.value = recipeList.map(recipe => ({
       ...recipe,
       category: getCategoryName(recipe.categoryId),
       viewCount: recipe.viewCount || 0,
       likeCount: recipe.likeCount || 0,
-      collectCount: recipe.collectCount || 0
+      collectCount: recipe.collectCount || 0,
+      coverImage: recipe.coverImage || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&h=200&fit=crop',
+      description: recipe.description || '',
+      difficulty: recipe.difficulty || 'Medium',
+      cookingTime: recipe.cookingTime || 30,
+      servings: recipe.servings || 2
     }))
+    
+    console.log('Processed recipes:', recipes.value)
   } catch (error) {
     console.error('Failed to fetch recipes:', error)
-    ElMessage.error('Failed to load recipes')
+    console.error('Error details:', error.response || error.message)
+    ElMessage.error('Failed to load recipes: ' + (error.message || 'Unknown error'))
   } finally {
     loading.value = false
   }
