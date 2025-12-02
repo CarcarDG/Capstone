@@ -1,10 +1,10 @@
 <template>
-  <div class="recipe-detail-page">
+  <div class="recipe-detail-page" v-loading="loading">
     <div class="back-button">
       <el-button @click="goBack" icon="ArrowLeft">Back to Recipes</el-button>
     </div>
 
-    <div class="recipe-header">
+    <div class="recipe-header" v-if="recipe.id">
       <img :src="recipe.coverImage" :alt="recipe.title" class="recipe-cover" />
       <div class="recipe-header-info">
         <h1>{{ recipe.title }}</h1>
@@ -36,25 +36,26 @@
       </div>
     </div>
 
-    <div class="recipe-content">
+    <div class="recipe-content" v-if="recipe.id">
       <el-card class="ingredients-card">
         <template #header>
           <h2>Ingredients</h2>
         </template>
-        <ul class="ingredients-list">
+        <ul class="ingredients-list" v-if="recipe.ingredients && recipe.ingredients.length > 0">
           <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
             <el-checkbox v-model="ingredient.checked" />
             <span>{{ ingredient.name }}</span>
             <span class="amount">{{ ingredient.amount }}</span>
           </li>
         </ul>
+        <p v-else>No ingredients listed</p>
       </el-card>
 
       <el-card class="steps-card">
         <template #header>
           <h2>Cooking Steps</h2>
         </template>
-        <div class="steps-list">
+        <div class="steps-list" v-if="recipe.steps && recipe.steps.length > 0">
           <div v-for="step in recipe.steps" :key="step.step" class="step-item">
             <div class="step-number">{{ step.step }}</div>
             <div class="step-content">
@@ -62,6 +63,7 @@
             </div>
           </div>
         </div>
+        <p v-else>No cooking steps listed</p>
       </el-card>
 
       <el-card v-if="recipe.tips" class="tips-card">
@@ -79,11 +81,13 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Clock, User, View, Star, Collection, Calendar, ArrowLeft } from '@element-plus/icons-vue'
+import { recipeAPI } from '@/api/recipe'
 
 const route = useRoute()
 const router = useRouter()
+const loading = ref(false)
 
-const recipes = {
+const mockRecipes = {
   1: {
     id: 1,
     title: 'Healthy Shrimp Mushroom Tofu Soup',
@@ -185,13 +189,76 @@ const recipes = {
   }
 }
 
-const recipe = ref(recipes[1])
+const recipe = ref({
+  id: 0,
+  title: '',
+  description: '',
+  coverImage: '',
+  difficulty: 'MEDIUM',
+  cookingTime: 0,
+  servings: 0,
+  viewCount: 0,
+  likeCount: 0,
+  collectCount: 0,
+  ingredients: [],
+  steps: [],
+  tips: ''
+})
+
+const fetchRecipe = async (id) => {
+  loading.value = true
+  try {
+    const data = await recipeAPI.getRecipeById(id)
+    console.log('Recipe API response:', data)
+    
+    // Parse ingredients and steps from JSON strings
+    let ingredients = []
+    let steps = []
+    
+    try {
+      ingredients = typeof data.ingredients === 'string' 
+        ? JSON.parse(data.ingredients).map(ing => ({ ...ing, checked: false }))
+        : (data.ingredients || [])
+    } catch (e) {
+      console.error('Failed to parse ingredients:', e)
+      ingredients = []
+    }
+    
+    try {
+      steps = typeof data.steps === 'string'
+        ? JSON.parse(data.steps)
+        : (data.steps || [])
+    } catch (e) {
+      console.error('Failed to parse steps:', e)
+      steps = []
+    }
+    
+    recipe.value = {
+      ...data,
+      ingredients,
+      steps,
+      coverImage: data.coverImage || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop',
+      viewCount: data.viewCount || 0,
+      likeCount: data.likeCount || 0,
+      collectCount: data.collectCount || 0
+    }
+  } catch (error) {
+    console.error('Failed to fetch recipe:', error)
+    ElMessage.error('Failed to load recipe')
+    
+    // Fallback to mock data if API fails
+    const recipeId = parseInt(id)
+    if (mockRecipes[recipeId]) {
+      recipe.value = mockRecipes[recipeId]
+    }
+  } finally {
+    loading.value = false
+  }
+}
 
 onMounted(() => {
-  const recipeId = parseInt(route.params.id)
-  if (recipes[recipeId]) {
-    recipe.value = recipes[recipeId]
-  }
+  const recipeId = route.params.id
+  fetchRecipe(recipeId)
 })
 
 const goBack = () => {
