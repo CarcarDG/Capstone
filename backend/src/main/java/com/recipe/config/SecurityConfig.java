@@ -32,19 +32,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF completely
+                // 1. Disable CSRF
                 .csrf(csrf -> csrf.disable())
-                // Enable CORS with our custom configuration
+                // 2. Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Stateless session
+                // 3. Stateless session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // 4. Authorization
                 .authorizeHttpRequests(auth -> auth
-                        // Allow OPTIONS requests explicitly (for preflight)
-                        .requestMatchers(request -> "OPTIONS".equals(request.getMethod())).permitAll()
-                        // Public endpoints
+                        .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll() // Explicitly
+                                                                                                                 // allow
+                                                                                                                 // preflight
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/**").permitAll() // TEMPORARY: Allow everything to debug 403
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                );
+
+        // Add JWT filter
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
