@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
       // Store token and user data
       token.value = response.token
       user.value = {
-        id: response.id, // Ensure ID is stored
+        id: response.id || response.userId, // Handle potential field name differences
         username: response.username,
         nickname: response.nickname,
         role: response.role,
@@ -136,8 +136,12 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchCurrentUser() {
     try {
       const userData = await authAPI.getCurrentUser()
-      user.value = userData
-      localStorage.setItem('user', JSON.stringify(userData))
+      // Ensure ID is present in the user object
+      user.value = {
+        ...userData,
+        id: userData.id || userData.userId // Handle potential field name differences
+      }
+      localStorage.setItem('user', JSON.stringify(user.value))
     } catch (error) {
       console.error('Failed to fetch user:', error)
       logout()

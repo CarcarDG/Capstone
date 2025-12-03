@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
           window.location.href = '/login'
           break
         case 403:
-          ElMessage.error('Access denied')
+          // ElMessage.error('Access denied') // Suppress 403 error message
           break
         case 404:
           ElMessage.error('Resource not found')
