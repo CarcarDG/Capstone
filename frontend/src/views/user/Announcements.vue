@@ -1,10 +1,10 @@
 <template>
-  <div class="announcements-page">
+  <div class="announcements-page" v-loading="loading">
     <div class="page-header">
       <h1>Announcements</h1>
     </div>
 
-    <div class="announcements-list">
+    <div class="announcements-list" v-if="announcements.length > 0">
       <el-card v-for="announcement in announcements" :key="announcement.id" class="announcement-card" shadow="hover">
         <div class="announcement-header">
           <div class="announcement-title">
@@ -27,34 +27,41 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { announcementAPI } from '@/api/announcement'
+import { ElMessage } from 'element-plus'
 
-const announcements = ref([
-  {
-    id: 1,
-    title: 'Beautiful Weather Today, Perfect for a Walk!',
-    content: 'Spring is here with blooming flowers, perfect for outdoor activities. Starting work mode!',
-    type: 'SYSTEM',
-    priority: 1,
-    createdAt: '2025-01-15T10:00:00'
-  },
-  {
-    id: 2,
-    title: 'All Features Complete and Ready to Use!',
-    content: 'All platform features have been developed and completed. Welcome everyone to use them!',
-    type: 'SYSTEM',
-    priority: 2,
-    createdAt: '2025-01-14T15:30:00'
-  },
-  {
-    id: 3,
-    title: 'Another Energetic Day, Let\'s Go Have Fun!',
-    content: 'Happy weekend! Wishing everyone a great time!',
-    type: 'EVENT',
-    priority: 1,
-    createdAt: '2025-01-13T09:00:00'
+const announcements = ref([])
+const loading = ref(false)
+
+const fetchAnnouncements = async () => {
+  loading.value = true
+  try {
+    const data = await announcementAPI.getAllAnnouncements()
+    console.log('Announcements API response:', data)
+    announcements.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('Failed to fetch announcements:', error)
+    ElMessage.error('Failed to load announcements')
+    // Fallback to mock data
+    announcements.value = [
+      {
+        id: 1,
+        title: 'Welcome to Recipe Platform!',
+        content: 'All features are now available. Start exploring!',
+        type: 'SYSTEM',
+        priority: 1,
+        createdAt: '2025-01-15T10:00:00'
+      }
+    ]
+  } finally {
+    loading.value = false
   }
-])
+}
+
+onMounted(() => {
+  fetchAnnouncements()
+})
 
 const getTypeColor = (type) => {
   const colors = {
