@@ -65,8 +65,9 @@ export const useAuthStore = defineStore('auth', () => {
           return
         }
 
-        // Create user object without password
+        // Create user object without password and assign a unique id
         const mockUser = {
+          id: Date.now(), // simple unique identifier
           username: foundUser.username,
           nickname: foundUser.nickname,
           role: foundUser.role,
