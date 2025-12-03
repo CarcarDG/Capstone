@@ -26,56 +26,56 @@ import java.util.Arrays;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no authentication required
-                .requestMatchers("/", "/health", "/actuator/**", "/error").permitAll()
-                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                .requestMatchers("/api/recipes/**", "/api/categories/**").permitAll()
-                .requestMatchers("/api/announcements/**", "/api/notes/**").permitAll()
-                .requestMatchers("/public/**").permitAll()
-                // Admin endpoints - require ADMIN role
-                .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints - no authentication required
+                        .requestMatchers("/", "/health", "/actuator/**", "/error").permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/api/recipes/**", "/api/categories/**").permitAll()
+                        .requestMatchers("/api/announcements/**", "/api/notes/**").permitAll()
+                        .requestMatchers("/api/meal-plans/**", "/api/collections/**").permitAll()
+                        .requestMatchers("/public/**").permitAll()
+                        // Admin endpoints - require ADMIN role
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Allow localhost for development, Netlify and GitHub Pages for production
         configuration.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:*", 
-            "https://deliousrecipesfinder.netlify.app",
-            "https://*.github.io"  // Allow any GitHub Pages domain
+                "http://localhost:*",
+                "https://deliousrecipesfinder.netlify.app",
+                "https://*.github.io" // Allow any GitHub Pages domain
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L); // Cache preflight for 1 hour
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
