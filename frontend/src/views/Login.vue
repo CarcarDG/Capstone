@@ -67,7 +67,7 @@ import { useAuth } from '@/composables/useAuth'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
-const { login, user, fetchCurrentUser } = useAuth()
+const { login, user } = useAuth()
 
 const loginFormRef = ref()
 const loading = ref(false)
