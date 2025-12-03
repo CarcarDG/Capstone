@@ -93,7 +93,7 @@ const recipe = ref({
   id: 0,
   title: '',
   description: '',
-  coverImage: '',
+  coverImage: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c', // Default image
   difficulty: 'MEDIUM',
   cookingTime: 0,
   servings: 0,
@@ -106,6 +106,21 @@ const recipe = ref({
 })
 
 const isCollected = ref(false)
+
+// Function to refresh user from localStorage
+const refreshUser = () => {
+  const userData = localStorage.getItem('user')
+  if (userData) {
+    try {
+      currentUser.value = JSON.parse(userData)
+    } catch (e) {
+      console.error('Failed to parse user data', e)
+      currentUser.value = {}
+    }
+  } else {
+    currentUser.value = {}
+  }
+}
 
 const fetchRecipe = async (id) => {
   loading.value = true
@@ -138,13 +153,14 @@ const fetchRecipe = async (id) => {
       ...data,
       ingredients,
       steps,
-      coverImage: data.coverImage || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop',
+      coverImage: data.coverImage || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c', // Fallback image
       viewCount: data.viewCount || 0,
       likeCount: data.likeCount || 0,
       collectCount: data.collectCount || 0
     }
 
-    // Check if collected
+    // Refresh user data and check collection status
+    refreshUser()
     if (currentUser.value.id) {
       checkCollectionStatus(id)
     }
@@ -183,6 +199,8 @@ const likeRecipe = async () => {
 }
 
 const collectRecipe = async () => {
+  refreshUser() // Ensure we have the latest user data
+  
   if (!currentUser.value.id) {
     ElMessage.warning('Please login to save recipes')
     return
