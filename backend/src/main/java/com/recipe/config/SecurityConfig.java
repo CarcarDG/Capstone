@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/announcements/**", "/api/notes/**").permitAll()
                         .requestMatchers("/api/meal-plans/**", "/api/collections/**").permitAll()
                         .requestMatchers("/public/**").permitAll()
+                        // Allow OPTIONS requests for CORS preflight
+                        .requestMatchers(request -> "OPTIONS".equals(request.getMethod())).permitAll()
                         // Admin endpoints - require ADMIN role
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         // All other endpoints require authentication
