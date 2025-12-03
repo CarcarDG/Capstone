@@ -29,7 +29,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setNickname("Administrator");
             admin.setEmail("admin@example.com");
-            admin.setRole("ADMIN");
+            admin.setRole(User.UserRole.ADMIN);
             admin.setAvatar("https://i.pravatar.cc/200?img=12");
             userRepository.save(admin);
             log.info("Created admin user: admin / admin123");
@@ -42,7 +42,7 @@ public class DataInitializer implements CommandLineRunner {
             john.setPassword(passwordEncoder.encode("user123"));
             john.setNickname("John Doe");
             john.setEmail("john@example.com");
-            john.setRole("USER");
+            john.setRole(User.UserRole.USER);
             john.setAvatar("https://i.pravatar.cc/200?img=33");
             userRepository.save(john);
             log.info("Created user: john / user123");
@@ -55,7 +55,7 @@ public class DataInitializer implements CommandLineRunner {
             jane.setPassword(passwordEncoder.encode("user123"));
             jane.setNickname("Jane Smith");
             jane.setEmail("jane@example.com");
-            jane.setRole("USER");
+            jane.setRole(User.UserRole.USER);
             jane.setAvatar("https://i.pravatar.cc/200?img=47");
             userRepository.save(jane);
             log.info("Created user: jane / user123");
