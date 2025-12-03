@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authAPI } from '@/api/auth'
+import axios from '@/api/axios' // Import axios instance
 
 export const useAuthStore = defineStore('auth', () => {
   // Initialize mock users on store creation
@@ -26,19 +27,26 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(credentials) {
     try {
-      const response = await authAPI.login(credentials)
+      // Use the new public auth endpoint to bypass Spring Security filters
+      // This is a direct call to avoid any interceptor issues
+      const response = await axios.post('/public/auth/login', {
+        username: credentials.username,
+        password: credentials.password
+      })
+
+      const data = response.data
 
       // Store token and user data
-      token.value = response.token
+      token.value = data.token
       user.value = {
-        id: response.id || response.userId, // Handle potential field name differences
-        username: response.username,
-        nickname: response.nickname,
-        role: response.role,
-        avatar: response.avatar
+        id: data.id,
+        username: data.username,
+        nickname: data.nickname,
+        role: data.role,
+        avatar: data.avatar
       }
 
-      localStorage.setItem('token', response.token)
+      localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(user.value))
 
       return true
@@ -49,6 +57,7 @@ export const useAuthStore = defineStore('auth', () => {
       return mockLogin(credentials)
     }
   }
+
   // Mock login fallback for when backend is not available
   function mockLogin(credentials) {
     // Simulate API delay
