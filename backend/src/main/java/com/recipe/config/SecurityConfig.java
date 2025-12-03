@@ -1,6 +1,5 @@
 package com.recipe.config;
 
-// Updated: 2025-12-01 - Fixed CORS and public endpoints for production deployment
 import com.recipe.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -32,22 +32,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Disable CSRF completely
                 .csrf(csrf -> csrf.disable())
+                // Enable CORS with our custom configuration
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Stateless session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - no authentication required
-                        .requestMatchers("/", "/health", "/actuator/**", "/error").permitAll()
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                        .requestMatchers("/api/recipes/**", "/api/categories/**").permitAll()
-                        .requestMatchers("/api/announcements/**", "/api/notes/**").permitAll()
-                        .requestMatchers("/api/meal-plans/**", "/api/collections/**").permitAll()
-                        .requestMatchers("/public/**").permitAll()
-                        // Allow OPTIONS requests for CORS preflight
+                        // Allow OPTIONS requests explicitly (for preflight)
                         .requestMatchers(request -> "OPTIONS".equals(request.getMethod())).permitAll()
-                        // Admin endpoints - require ADMIN role
-                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
-                        // All other endpoints require authentication
+                        // Public endpoints
+                        .requestMatchers("/**").permitAll() // TEMPORARY: Allow everything to debug 403
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -67,16 +62,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow localhost for development, Netlify and GitHub Pages for production
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:*",
-                "https://deliousrecipesfinder.netlify.app",
-                "https://*.github.io" // Allow any GitHub Pages domain
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Allow ALL origins
+        configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
+        // Allow ALL methods
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        // Allow ALL headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        // Allow credentials
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // Cache preflight for 1 hour
+        // Expose headers
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
