@@ -14,22 +14,23 @@ import java.util.Map;
  */
 @RestController
 public class HealthController {
-    
+
     @GetMapping("/")
     public ResponseEntity<Map<String, Object>> root() {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");
         response.put("message", "Recipe Platform API is running");
         response.put("timestamp", LocalDateTime.now());
-        response.put("version", "1.0.0");
+        response.put("version", "1.0.1-NUCLEAR-OPTION");
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/health")
-    public ResponseEntity<Map<String, String>> health() {
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("message", "Service is healthy");
-        return ResponseEntity.ok(response);
+    public Map<String, String> health() {
+        Map<String, String> status = new HashMap<>();
+        status.put("status", "UP");
+        status.put("message", "Service is healthy");
+        status.put("version", "1.0.1-NUCLEAR-OPTION"); // Verify this version in response
+        return status;
     }
 }
