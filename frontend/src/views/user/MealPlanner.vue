@@ -112,59 +112,61 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, ArrowLeft, ArrowRight, Close } from '@element-plus/icons-vue'
+import { mealPlanAPI } from '@/api/mealPlan'
+import { recipeAPI } from '@/api/recipe'
 
+const route = useRoute()
 const currentWeekStart = ref(getMonday(new Date()))
 const mealTypes = ['Breakfast', 'Lunch', 'Dinner']
+const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
+const mealPlans = ref([])
+const availableRecipes = ref([])
 
 const getTodayDate = () => {
   const today = new Date()
   return today.toISOString().split('T')[0]
 }
 
-const getTomorrowDate = () => {
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  return tomorrow.toISOString().split('T')[0]
+const fetchMealPlans = async () => {
+  if (!currentUser.value.id) return
+  
+  try {
+    const data = await mealPlanAPI.getUserMealPlans(currentUser.value.id)
+    mealPlans.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('Failed to fetch meal plans:', error)
+    ElMessage.error('Failed to load meal plans')
+  }
 }
 
-const mealPlans = ref([
-  {
-    id: 1,
-    date: getTodayDate(),
-    mealType: 'Lunch',
-    recipe: {
-      id: 1,
-      title: 'Healthy Shrimp Mushroom Tofu Soup',
-      coverImage: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&h=600&fit=crop'
-    },
-    notes: 'Having this for lunch today'
-  },
-  {
-    id: 2,
-    date: getTodayDate(),
-    mealType: 'Dinner',
-    recipe: {
-      id: 2,
-      title: 'Low-Calorie Sweet Pumpkin Pancakes',
-      coverImage: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop'
-    },
-    notes: 'Dinner preparation'
-  },
-  {
-    id: 3,
-    date: getTomorrowDate(),
-    mealType: 'Breakfast',
-    recipe: {
-      id: 3,
-      title: 'Potato Shred Egg Pancake',
-      coverImage: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&h=600&fit=crop'
-    },
-    notes: 'Quick breakfast'
+const fetchRecipes = async () => {
+  try {
+    const data = await recipeAPI.getAllRecipes()
+    availableRecipes.value = Array.isArray(data) ? data.map(r => ({
+      id: r.id,
+      title: r.title,
+      image: r.coverImage || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'
+    })) : []
+  } catch (error) {
+    console.error('Failed to fetch recipes:', error)
   }
-])
+}
+
+onMounted(async () => {
+  await fetchRecipes()
+  await fetchMealPlans()
+  
+  // Check for addRecipe query param
+  if (route.query.addRecipe) {
+    const recipeId = parseInt(route.query.addRecipe)
+    selectedRecipeId.value = recipeId
+    addMeal()
+  }
+})
 
 const weekDays = computed(() => {
   const days = []
@@ -249,17 +251,11 @@ const selectedMealType = ref('')
 const selectedRecipeId = ref(null)
 const mealNotes = ref('')
 
-const availableRecipes = [
-  { id: 1, title: 'Healthy Shrimp Mushroom Tofu Soup', image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300&h=200&fit=crop' },
-  { id: 2, title: 'Low-Calorie Sweet Pumpkin Pancakes', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&h=200&fit=crop' },
-  { id: 3, title: 'Potato Shred Egg Pancake', image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=300&h=200&fit=crop' },
-  { id: 4, title: 'Comfort Food That Heals the Soul', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&h=200&fit=crop' }
-]
-
 function addMeal() {
   selectedDate.value = new Date().toISOString().split('T')[0]
   selectedMealType.value = 'Lunch'
-  selectedRecipeId.value = null
+  // Keep selectedRecipeId if set from query param
+  if (!selectedRecipeId.value) selectedRecipeId.value = null
   mealNotes.value = ''
   showAddDialog.value = true
 }
@@ -272,28 +268,41 @@ function addMealToSlot(date, mealType) {
   showAddDialog.value = true
 }
 
-function confirmAddMeal() {
+async function confirmAddMeal() {
   if (!selectedRecipeId.value) {
     ElMessage.warning('Please select a recipe')
     return
   }
   
-  const recipe = availableRecipes.find(r => r.id === selectedRecipeId.value)
-  const newMeal = {
-    id: mealPlans.value.length + 1,
+  if (!currentUser.value.id) {
+    ElMessage.warning('Please login to add meals')
+    return
+  }
+  
+  const recipe = availableRecipes.value.find(r => r.id === selectedRecipeId.value)
+  
+  const mealData = {
+    userId: currentUser.value.id,
+    recipeId: recipe.id,
     date: selectedDate.value,
     mealType: selectedMealType.value,
-    recipe: {
-      id: recipe.id,
-      title: recipe.title,
-      coverImage: recipe.image
-    },
     notes: mealNotes.value
   }
   
-  mealPlans.value.push(newMeal)
-  showAddDialog.value = false
-  ElMessage.success('Meal added to planner!')
+  try {
+    await mealPlanAPI.createMealPlan(mealData)
+    await fetchMealPlans() // Refresh list
+    showAddDialog.value = false
+    ElMessage.success('Meal added to planner!')
+    
+    // Clear query param if exists
+    if (route.query.addRecipe) {
+      // router.replace('/meal-planner')
+    }
+  } catch (error) {
+    console.error('Failed to add meal:', error)
+    ElMessage.error('Failed to add meal')
+  }
 }
 
 function removeMeal(id) {
@@ -301,11 +310,17 @@ function removeMeal(id) {
     confirmButtonText: 'Remove',
     cancelButtonText: 'Cancel',
     type: 'warning'
-  }).then(() => {
-    const index = mealPlans.value.findIndex(m => m.id === id)
-    if (index > -1) {
-      mealPlans.value.splice(index, 1)
+  }).then(async () => {
+    try {
+      await mealPlanAPI.deleteMealPlan(id)
+      const index = mealPlans.value.findIndex(m => m.id === id)
+      if (index > -1) {
+        mealPlans.value.splice(index, 1)
+      }
       ElMessage.success('Meal removed')
+    } catch (error) {
+      console.error('Failed to remove meal:', error)
+      ElMessage.error('Failed to remove meal')
     }
   })
 }

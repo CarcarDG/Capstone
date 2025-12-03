@@ -82,112 +82,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Clock, User, View, Star, Collection, Calendar, ArrowLeft } from '@element-plus/icons-vue'
 import { recipeAPI } from '@/api/recipe'
+import { collectionAPI } from '@/api/collection'
 
 const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
-
-const mockRecipes = {
-  1: {
-    id: 1,
-    title: 'Healthy Shrimp Mushroom Tofu Soup',
-    description: 'Low-calorie, high-protein nutritious healthy soup',
-    coverImage: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&h=600&fit=crop',
-    difficulty: 'EASY',
-    cookingTime: 30,
-    servings: 2,
-    viewCount: 1234,
-    likeCount: 89,
-    collectCount: 56,
-    ingredients: [
-      { name: 'Shrimp', amount: '200g', checked: false },
-      { name: 'Mushrooms', amount: '150g', checked: false },
-      { name: 'Tofu', amount: '1 block', checked: false },
-      { name: 'Ginger and scallions', amount: 'to taste', checked: false }
-    ],
-    steps: [
-      { step: 1, description: 'Clean shrimp and devein, slice mushrooms, cube tofu' },
-      { step: 2, description: 'Boil water in pot, add ginger slices' },
-      { step: 3, description: 'After water boils, add tofu and mushrooms, cook for 5 minutes' },
-      { step: 4, description: 'Add shrimp and cook until they change color' },
-      { step: 5, description: 'Season with salt and sprinkle scallions' }
-    ],
-    tips: 'Do not overcook shrimp, just until color changes to keep tender texture'
-  },
-  2: {
-    id: 2,
-    title: 'Low-Calorie Sweet Pumpkin Pancakes',
-    description: 'Healthy and delicious pumpkin treats',
-    coverImage: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop',
-    difficulty: 'EASY',
-    cookingTime: 45,
-    servings: 4,
-    viewCount: 2341,
-    likeCount: 156,
-    collectCount: 89,
-    ingredients: [
-      { name: 'Pumpkin', amount: '300g', checked: false },
-      { name: 'Glutinous rice flour', amount: '200g', checked: false },
-      { name: 'Sugar', amount: '30g', checked: false }
-    ],
-    steps: [
-      { step: 1, description: 'Peel pumpkin, cut into pieces and steam until soft' },
-      { step: 2, description: 'While hot, add sugar and mash into puree' },
-      { step: 3, description: 'Gradually add glutinous rice flour and knead into dough' },
-      { step: 4, description: 'Divide into small portions and flatten' },
-      { step: 5, description: 'Pan fry on low heat until golden on both sides' }
-    ],
-    tips: 'Dough should not be too soft, or it will be hard to shape'
-  },
-  3: {
-    id: 3,
-    title: 'Potato Shred Egg Pancake',
-    description: 'Simple and quick breakfast option',
-    coverImage: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&h=600&fit=crop',
-    difficulty: 'EASY',
-    cookingTime: 20,
-    servings: 2,
-    viewCount: 3456,
-    likeCount: 234,
-    collectCount: 123,
-    ingredients: [
-      { name: 'Potatoes', amount: '2', checked: false },
-      { name: 'Eggs', amount: '2', checked: false },
-      { name: 'Flour', amount: '50g', checked: false },
-      { name: 'Chopped scallions', amount: 'to taste', checked: false }
-    ],
-    steps: [
-      { step: 1, description: 'Shred potatoes and rinse with water to remove starch' },
-      { step: 2, description: 'Drain water, add eggs, flour, scallions, and salt' },
-      { step: 3, description: 'Mix evenly into batter' },
-      { step: 4, description: 'Brush oil in pan, pour batter and spread evenly' },
-      { step: 5, description: 'Cook on low heat until golden on both sides' }
-    ],
-    tips: 'Shred potatoes as fine as possible for better texture'
-  },
-  4: {
-    id: 4,
-    title: 'Comfort Food That Heals the Soul',
-    description: 'Exquisite and delicious creative cuisine',
-    coverImage: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop',
-    difficulty: 'MEDIUM',
-    cookingTime: 60,
-    servings: 3,
-    viewCount: 4567,
-    likeCount: 345,
-    collectCount: 234,
-    ingredients: [
-      { name: 'Main ingredients', amount: 'according to personal preference', checked: false },
-      { name: 'Seasonings', amount: 'to taste', checked: false }
-    ],
-    steps: [
-      { step: 1, description: 'Prepare required ingredients' },
-      { step: 2, description: 'Cook according to steps' },
-      { step: 3, description: 'Plate and garnish' }
-    ],
-    tips: 'Pay attention to heat control'
-  }
-}
+const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
 
 const recipe = ref({
   id: 0,
@@ -205,11 +105,12 @@ const recipe = ref({
   tips: ''
 })
 
+const isCollected = ref(false)
+
 const fetchRecipe = async (id) => {
   loading.value = true
   try {
     const data = await recipeAPI.getRecipeById(id)
-    console.log('Recipe API response:', data)
     
     // Parse ingredients and steps from JSON strings
     let ingredients = []
@@ -242,42 +143,74 @@ const fetchRecipe = async (id) => {
       likeCount: data.likeCount || 0,
       collectCount: data.collectCount || 0
     }
+
+    // Check if collected
+    if (currentUser.value.id) {
+      checkCollectionStatus(id)
+    }
   } catch (error) {
     console.error('Failed to fetch recipe:', error)
     ElMessage.error('Failed to load recipe')
-    
-    // Fallback to mock data if API fails
-    const recipeId = parseInt(id)
-    if (mockRecipes[recipeId]) {
-      recipe.value = mockRecipes[recipeId]
-    }
   } finally {
     loading.value = false
   }
 }
 
+const checkCollectionStatus = async (recipeId) => {
+  try {
+    const status = await collectionAPI.checkCollection(currentUser.value.id, recipeId)
+    isCollected.value = status
+  } catch (error) {
+    console.error('Failed to check collection status:', error)
+  }
+}
+
 onMounted(() => {
   const recipeId = route.params.id
-  fetchRecipe(recipeId)
+  if (recipeId) {
+    fetchRecipe(recipeId)
+  }
 })
 
 const goBack = () => {
   router.push('/recipes')
 }
 
-const likeRecipe = () => {
+const likeRecipe = async () => {
+  // Implement like functionality if backend supports it
   recipe.value.likeCount++
   ElMessage.success('Liked!')
 }
 
-const collectRecipe = () => {
-  recipe.value.collectCount++
-  ElMessage.success('Saved to collections!')
+const collectRecipe = async () => {
+  if (!currentUser.value.id) {
+    ElMessage.warning('Please login to save recipes')
+    return
+  }
+
+  try {
+    if (isCollected.value) {
+      await collectionAPI.removeFromCollection(currentUser.value.id, recipe.value.id)
+      recipe.value.collectCount--
+      isCollected.value = false
+      ElMessage.success('Removed from collections')
+    } else {
+      await collectionAPI.addToCollection(currentUser.value.id, recipe.value.id)
+      recipe.value.collectCount++
+      isCollected.value = true
+      ElMessage.success('Saved to collections!')
+    }
+  } catch (error) {
+    console.error('Failed to update collection:', error)
+    ElMessage.error('Failed to update collection')
+  }
 }
 
 const addToMealPlan = () => {
-  ElMessage.success('Added to meal plan!')
-  router.push('/meal-planner')
+  router.push({
+    path: '/meal-planner',
+    query: { addRecipe: recipe.value.id }
+  })
 }
 </script>
 
