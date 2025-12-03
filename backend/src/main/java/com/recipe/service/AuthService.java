@@ -16,46 +16,45 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-    
+
     public LoginResponse login(LoginRequest request) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-        
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         String token = jwtUtil.generateToken(userDetails);
-        
+
         return new LoginResponse(
                 token,
+                user.getId(), // Include user ID
                 user.getUsername(),
                 user.getNickname(),
                 user.getRole().name(),
-                user.getAvatar()
-        );
+                user.getAvatar());
     }
-    
+
     public User register(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
-        
+
         if (user.getEmail() != null && userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
-        
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(User.UserRole.USER);
         user.setStatus(1);
-        
+
         return userRepository.save(user);
     }
 }
