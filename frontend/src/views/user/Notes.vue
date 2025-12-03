@@ -41,59 +41,34 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, View, Star, Collection, ChatDotRound } from '@element-plus/icons-vue'
+import { noteAPI } from '@/api/note'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const searchQuery = ref('')
+const notes = ref([])
+const loading = ref(false)
 
-const notes = ref([
-  {
-    id: 1,
-    title: 'Braised Pork Belly (Super Detailed)',
-    content: 'Made super delicious braised pork today, fatty but not greasy, melts in your mouth! Sharing the detailed recipe with everyone. First select pork belly, cut into 2cm square pieces...',
-    images: ['https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&h=600&fit=crop'],
-    tags: 'braised pork,home cooking',
-    viewCount: 5678,
-    likeCount: 456,
-    collectCount: 234,
-    commentCount: 78
-  },
-  {
-    id: 2,
-    title: 'Peanut Red Bean Milk Smoothie',
-    content: 'Nutritious breakfast drink, rich and delicious',
-    images: ['https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=800&h=600&fit=crop'],
-    tags: 'breakfast,drinks',
-    viewCount: 3456,
-    likeCount: 234,
-    collectCount: 123,
-    commentCount: 45
-  },
-  {
-    id: 3,
-    title: 'Juicy Dumplings - Irresistibly Good!',
-    content: 'Super delicious snack recipe',
-    images: ['https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=800&h=600&fit=crop'],
-    tags: 'snacks,desserts',
-    viewCount: 6789,
-    likeCount: 567,
-    collectCount: 345,
-    commentCount: 123
-  },
-  {
-    id: 4,
-    title: 'Braised Spare Ribs',
-    content: 'Classic home-style dish, bright red color, delicious taste',
-    images: ['https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=600&fit=crop'],
-    tags: 'spare ribs,home cooking',
-    viewCount: 4567,
-    likeCount: 345,
-    collectCount: 234,
-    commentCount: 67
+const fetchNotes = async () => {
+  loading.value = true
+  try {
+    const data = await noteAPI.getAllNotes()
+    notes.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('Failed to fetch notes:', error)
+    ElMessage.error('Failed to load notes')
+    notes.value = []
+  } finally {
+    loading.value = false
   }
-])
+}
+
+onMounted(() => {
+  fetchNotes()
+})
 
 const filteredNotes = computed(() => {
   if (!searchQuery.value) return notes.value
@@ -102,7 +77,7 @@ const filteredNotes = computed(() => {
   return notes.value.filter(note => 
     note.title.toLowerCase().includes(query) || 
     note.content.toLowerCase().includes(query) ||
-    note.tags.toLowerCase().includes(query)
+    (note.tags && note.tags.toLowerCase().includes(query))
   )
 })
 
