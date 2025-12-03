@@ -65,11 +65,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow localhost for development and Netlify for production
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173", 
-            "http://localhost:3000",
-            "https://deliousrecipesfinder.netlify.app"
+        // Allow localhost for development, Netlify and GitHub Pages for production
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:*", 
+            "https://deliousrecipesfinder.netlify.app",
+            "https://*.github.io"  // Allow any GitHub Pages domain
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
