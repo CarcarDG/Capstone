@@ -2,6 +2,7 @@ package com.recipe.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,16 +22,29 @@ import java.util.Collections;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    public SecurityConfig() {
+        System.out.println(">>> LOADING CUSTOM SECURITY CONFIG <<<");
+    }
+
     @Bean
+    @Order(1)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // ABSOLUTE MINIMUM CONFIGURATION TO DEBUG 403
+        System.out.println(">>> CONFIGURING SECURITY FILTER CHAIN <<<");
+
         http
+                // Explicitly disable CSRF
                 .csrf(csrf -> csrf.disable())
+                // Explicitly disable HTTP Basic
+                .httpBasic(basic -> basic.disable())
+                // Explicitly disable Form Login
+                .formLogin(form -> form.disable())
+                // Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Stateless session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Allow everything
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // ALLOW EVERYTHING
-                );
+                        .anyRequest().permitAll());
 
         return http.build();
     }
