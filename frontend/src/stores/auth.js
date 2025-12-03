@@ -24,23 +24,24 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials) {
     try {
       const response = await authAPI.login(credentials)
-      
+
       // Store token and user data
       token.value = response.token
       user.value = {
+        id: response.id, // Ensure ID is stored
         username: response.username,
         nickname: response.nickname,
         role: response.role,
         avatar: response.avatar
       }
-      
+
       localStorage.setItem('token', response.token)
       localStorage.setItem('user', JSON.stringify(user.value))
-      
+
       return true
     } catch (error) {
       console.error('Login failed, trying mock auth:', error)
-      
+
       // Fallback to mock authentication if backend is unavailable
       return mockLogin(credentials)
     }
@@ -53,17 +54,17 @@ export const useAuthStore = defineStore('auth', () => {
       setTimeout(() => {
         // Get current mock users from storage
         const users = JSON.parse(localStorage.getItem('mockUsers') || '[]')
-        
+
         // Find user with matching credentials
-        const foundUser = users.find(u => 
+        const foundUser = users.find(u =>
           u.username === credentials.username && u.password === credentials.password
         )
-        
+
         if (!foundUser) {
           resolve(false)
           return
         }
-        
+
         // Create user object without password
         const mockUser = {
           username: foundUser.username,
@@ -72,14 +73,14 @@ export const useAuthStore = defineStore('auth', () => {
           avatar: foundUser.avatar,
           email: foundUser.email
         }
-        
+
         const mockToken = 'mock-jwt-token-' + Date.now()
-        
+
         token.value = mockToken
         user.value = mockUser
         localStorage.setItem('token', mockToken)
         localStorage.setItem('user', JSON.stringify(mockUser))
-        
+
         resolve(true)
       }, 500)
     })
@@ -91,25 +92,25 @@ export const useAuthStore = defineStore('auth', () => {
       return true
     } catch (error) {
       console.error('Registration failed, using mock:', error)
-      
+
       // Mock registration fallback
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           // Get current mock users
           const users = JSON.parse(localStorage.getItem('mockUsers') || '[]')
-          
+
           // Check if username already exists
           if (users.some(u => u.username.toLowerCase() === userData.username.toLowerCase())) {
             reject(new Error('Username already exists'))
             return
           }
-          
+
           // Check if email already exists
           if (userData.email && users.some(u => u.email === userData.email)) {
             reject(new Error('Email already exists'))
             return
           }
-          
+
           // Add new user to mock storage
           const newUser = {
             username: userData.username,
@@ -120,10 +121,10 @@ export const useAuthStore = defineStore('auth', () => {
             role: 'USER',
             avatar: `https://i.pravatar.cc/200?img=${Math.floor(Math.random() * 70)}`
           }
-          
+
           users.push(newUser)
           localStorage.setItem('mockUsers', JSON.stringify(users))
-          
+
           console.log('Mock registration successful for:', userData.username)
           console.log('You can now login with:', userData.username, '/', userData.password)
           resolve(true)
