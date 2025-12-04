@@ -110,18 +110,19 @@ public class PublicAuthController {
     
     // Reset password endpoint
     @PostMapping("/reset-password/{username}")
-    public ResponseEntity<?> resetPassword(@PathVariable String username) {
+    public ResponseEntity<?> resetPassword(@PathVariable String username, 
+                                           @RequestParam(defaultValue = "user123") String newPwd) {
         try {
             User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
             
-            // Set password to user123
-            String newPassword = passwordEncoder.encode("user123");
-            user.setPassword(newPassword);
+            // Set password to specified value
+            String encodedPassword = passwordEncoder.encode(newPwd);
+            user.setPassword(encodedPassword);
             userRepository.save(user);
             
             return ResponseEntity.ok(Map.of(
-                "message", "Password reset to user123",
+                "message", "Password reset to " + newPwd,
                 "username", username
             ));
         } catch (Exception e) {
