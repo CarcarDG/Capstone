@@ -50,7 +50,7 @@ public class PublicAuthController {
             response.setId(user.getId());
             response.setUsername(user.getUsername());
             response.setNickname(user.getNickname());
-            response.setRole(user.getRole());
+            response.setRole(user.getRole().name()); // Convert enum to String
             response.setAvatar(user.getAvatar());
             
             System.out.println("Login successful for user: " + user.getUsername());
