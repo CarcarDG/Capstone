@@ -80,4 +80,52 @@ public class PublicAuthController {
         response.put("path", "/public/auth");
         return ResponseEntity.ok(response);
     }
+    
+    // Debug endpoint to check user and reset password
+    @GetMapping("/debug/{username}")
+    public ResponseEntity<?> debugUser(@PathVariable String username) {
+        try {
+            User user = userRepository.findByUsername(username).orElse(null);
+            if (user == null) {
+                return ResponseEntity.ok(Map.of("error", "User not found", "username", username));
+            }
+            
+            // Test if password matches
+            boolean matchesUser123 = passwordEncoder.matches("user123", user.getPassword());
+            boolean matchesAdmin123 = passwordEncoder.matches("admin123", user.getPassword());
+            
+            Map<String, Object> info = new HashMap<>();
+            info.put("id", user.getId());
+            info.put("username", user.getUsername());
+            info.put("passwordPrefix", user.getPassword().substring(0, 20));
+            info.put("matchesUser123", matchesUser123);
+            info.put("matchesAdmin123", matchesAdmin123);
+            info.put("role", user.getRole().name());
+            
+            return ResponseEntity.ok(info);
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    // Reset password endpoint
+    @PostMapping("/reset-password/{username}")
+    public ResponseEntity<?> resetPassword(@PathVariable String username) {
+        try {
+            User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            // Set password to user123
+            String newPassword = passwordEncoder.encode("user123");
+            user.setPassword(newPassword);
+            userRepository.save(user);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Password reset to user123",
+                "username", username
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("error", e.getMessage()));
+        }
+    }
 }
