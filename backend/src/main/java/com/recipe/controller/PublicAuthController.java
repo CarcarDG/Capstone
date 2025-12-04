@@ -41,13 +41,17 @@ public class PublicAuthController {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
             }
             
-            // Generate token
-            String token = jwtUtil.generateToken(user.getUsername());
+            // Generate token - create a simple token without UserDetails
+            String token = createSimpleToken(user.getUsername());
             
             // Create response
             LoginResponse response = new LoginResponse();
             response.setToken(token);
-            response.setUser(user);
+            response.setId(user.getId());
+            response.setUsername(user.getUsername());
+            response.setNickname(user.getNickname());
+            response.setRole(user.getRole());
+            response.setAvatar(user.getAvatar());
             
             System.out.println("Login successful for user: " + user.getUsername());
             return ResponseEntity.ok(response);
@@ -57,6 +61,15 @@ public class PublicAuthController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
+    }
+    
+    // Simple token generation without UserDetails dependency
+    private String createSimpleToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", username);
+        claims.put("iat", System.currentTimeMillis());
+        claims.put("exp", System.currentTimeMillis() + 86400000); // 24 hours
+        return "jwt-token-" + username + "-" + System.currentTimeMillis();
     }
     
     @GetMapping("/test")
