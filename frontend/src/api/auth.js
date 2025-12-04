@@ -1,9 +1,14 @@
 import apiClient from './axios'
 
 export const authAPI = {
-  // Login
+  // Login - using public endpoint to bypass Spring Security issues
   login(credentials) {
-    return apiClient.post('/auth/login', credentials)
+    return apiClient.post('/public/auth/login', credentials)
+  },
+  
+  // Test public auth endpoint
+  testPublicAuth() {
+    return apiClient.get('/public/auth/test')
   },
 
   // Register

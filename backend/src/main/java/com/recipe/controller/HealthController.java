@@ -30,7 +30,7 @@ public class HealthController {
         Map<String, String> status = new HashMap<>();
         status.put("status", "UP");
         status.put("message", "Service is healthy");
-        status.put("version", "1.0.2-SECURITY-FIX"); // Verify this version in response
+        status.put("version", "1.0.3-FORCE-DEPLOY-" + System.currentTimeMillis()); // Unique version
         return status;
     }
 }

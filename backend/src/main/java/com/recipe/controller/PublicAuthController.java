@@ -10,39 +10,61 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Public Authentication Controller
+ * This controller bypasses Spring Security filters for login
+ */
 @RestController
 @RequestMapping("/public/auth")
+@CrossOrigin(origins = "*", maxAge = 3600, allowedHeaders = "*")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class PublicAuthController {
-
+    
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        System.out.println(">>> PUBLIC LOGIN ATTEMPT: " + request.getUsername());
-
-        User user = userRepository.findByUsername(request.getUsername())
+        try {
+            System.out.println("Public login attempt for user: " + request.getUsername());
+            
+            // Find user
+            User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            // Generate token manually (just for frontend compatibility)
-            String token = jwtUtil.generateToken(new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
-                    user.getPassword(),
-                    java.util.Collections.emptyList()));
-
-            return ResponseEntity.ok(new LoginResponse(
-                    token,
-                    user.getId(),
-                    user.getUsername(),
-                    user.getNickname(),
-                    user.getRole().name(),
-                    user.getAvatar()));
-        } else {
-            return ResponseEntity.status(401).body("Invalid password");
+            
+            // Check password
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
+            }
+            
+            // Generate token
+            String token = jwtUtil.generateToken(user.getUsername());
+            
+            // Create response
+            LoginResponse response = new LoginResponse();
+            response.setToken(token);
+            response.setUser(user);
+            
+            System.out.println("Login successful for user: " + user.getUsername());
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Login error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
+    }
+    
+    @GetMapping("/test")
+    public ResponseEntity<Map<String, String>> test() {
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "OK");
+        response.put("message", "Public auth endpoint is working");
+        response.put("path", "/public/auth");
+        return ResponseEntity.ok(response);
     }
 }
