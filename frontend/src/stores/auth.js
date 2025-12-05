@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authAPI } from '@/api/auth'
-import axios from '@/api/axios' // Import axios instance
 
 export const useAuthStore = defineStore('auth', () => {
   // Initialize mock users on store creation
@@ -28,13 +27,26 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials) {
     try {
       // Use the new public auth endpoint to bypass Spring Security filters
-      // This is a direct call to avoid any interceptor issues
-      const response = await axios.post('/public/auth/login', {
-        username: credentials.username,
-        password: credentials.password
+      // Build the full URL since /public is not under /api
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+      const publicAuthUrl = baseUrl.replace('/api', '') + '/public/auth/login'
+      
+      console.log('Attempting login to:', publicAuthUrl)
+      
+      const response = await fetch(publicAuthUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: credentials.username,
+          password: credentials.password
+        })
       })
 
-      const data = response.data
+      if (!response.ok) {
+        throw new Error('Login failed')
+      }
+
+      const data = await response.json()
 
       // Store token and user data
       token.value = data.token
